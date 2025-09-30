@@ -51,9 +51,14 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        button:hover {
+        button:hover:not(:disabled) {
             transform: scale(1.05);
             box-shadow: 0 0 15px rgba(0, 255, 255, 0.5);
+        }
+        button:disabled {
+            background: #555;
+            cursor: not-allowed;
+            color: #888;
         }
     </style>
 </head>
@@ -61,20 +66,46 @@
     <div class="container">
         <h1>Генератор Ключей</h1>
         <div id="key">FREE_0000000000000000</div>
-        <button onclick="generateKey()">Генерировать ключ</button>
+        <button id="generateBtn" onclick="generateKey()">Генерировать ключ</button>
     </div>
 
     <script>
         function generateKey() {
-            const digits = '0123456789';
-            let randomPart = '';
-            for (let i = 0; i < 16; i++) {
-                randomPart += digits[Math.floor(Math.random() * 10)];
+            // Проверяем, есть ли сохранённый ключ
+            let key = localStorage.getItem('userKey');
+            const keyElement = document.getElementById('key');
+            const button = document.getElementById('generateBtn');
+
+            if (!key) {
+                // Генерируем новый ключ, если его нет
+                const digits = '0123456789';
+                let randomPart = '';
+                for (let i = 0; i < 16; i++) {
+                    randomPart += digits[Math.floor(Math.random() * 10)];
+                }
+                key = 'FREE_' + randomPart;
+                // Сохраняем ключ в localStorage
+                localStorage.setItem('userKey', key);
+                // Отключаем кнопку
+                button.disabled = true;
             }
-            document.getElementById('key').textContent = 'FREE_' + randomPart;
+
+            // Показываем ключ
+            keyElement.textContent = key;
         }
-        // Генерация при загрузке
-        generateKey();
+
+        // Проверяем при загрузке страницы
+        window.onload = function() {
+            const savedKey = localStorage.getItem('userKey');
+            if (savedKey) {
+                // Если ключ уже есть, показываем его и отключаем кнопку
+                document.getElementById('key').textContent = savedKey;
+                document.getElementById('generateBtn').disabled = true;
+            } else {
+                // Если ключа нет, генерируем новый
+                generateKey();
+            }
+        };
     </script>
 </body>
 </html>
